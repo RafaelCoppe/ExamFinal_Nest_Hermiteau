@@ -2,8 +2,8 @@ import {
   Injectable,
   ExecutionContext,
   ForbiddenException,
-} from '@nestjs/common';
-import { AuthGuard } from './auth.guard';
+} from "@nestjs/common";
+import { AuthGuard } from "./auth.guard";
 
 @Injectable()
 export class AdminGuard extends AuthGuard {
@@ -22,7 +22,7 @@ export class AdminGuard extends AuthGuard {
     // Vérifier si l'utilisateur est admin
     if (!user || !user.is_admin) {
       throw new ForbiddenException(
-        'Accès refusé : privilèges administrateur requis',
+        "Accès refusé : privilèges administrateur requis",
       );
     }
 

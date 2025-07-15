@@ -3,9 +3,9 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { Request } from "express";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -37,19 +37,19 @@ export class AuthGuard implements CanActivate {
     const authHeader = request.headers.authorization;
 
     if (authHeader) {
-      const [type, token] = authHeader.split(' ') ?? [];
-      if (type === 'Bearer' && token) {
+      const [type, token] = authHeader.split(" ") ?? [];
+      if (type === "Bearer" && token) {
         return token;
       }
     }
 
     // Vérifier si le token est envoyé directement dans l'en-tête Authorization (sans "Bearer")
-    if (authHeader && !authHeader.includes(' ')) {
+    if (authHeader && !authHeader.includes(" ")) {
       return authHeader;
     }
 
     // Vérifier d'autres en-têtes possibles utilisés par Swagger UI
-    const swaggerToken = request.headers['x-access-token'] as string;
+    const swaggerToken = request.headers["x-access-token"] as string;
     if (swaggerToken) {
       return swaggerToken;
     }
