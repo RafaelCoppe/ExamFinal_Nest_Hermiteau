@@ -3,13 +3,14 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
-} from "@nestjs/common";
-import { MailerService } from "@nestjs-modules/mailer";
-import { JwtService } from "@nestjs/jwt";
-import * as crypto from "crypto-js";
-import { User } from "../entities/user.entity";
-import { RegisterDto, LoginDto, ValidateDto } from "../dto/auth.dto";
-import { UserRepository } from "src/repository/user.repository";
+} from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
+import { JwtService } from '@nestjs/jwt';
+import * as crypto from 'crypto-js';
+import { User } from '../entities/user.entity';
+import { RegisterDto, LoginDto, ValidateDto } from '../dto/auth.dto';
+import { UserRepository } from 'src/repository/user.repository';
+import { CreateAdminUserDto } from 'src/dto/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -38,7 +39,7 @@ export class AuthService {
     // Vérifier si l'utilisateur existe déjà
     const existingUser = await this.userRepository.findOneByEmail(email);
     if (existingUser) {
-      throw new ConflictException("Un utilisateur avec cet email existe déjà");
+      throw new ConflictException('Un utilisateur avec cet email existe déjà');
     }
 
     // Hasher le mot de passe avec MD5
@@ -58,8 +59,8 @@ export class AuthService {
     try {
       await this.mailerService.sendMail({
         to: email,
-        subject: "Validation de votre compte",
-        template: "validation-email",
+        subject: 'Validation de votre compte',
+        template: 'validation-email',
         context: {
           first_name,
           validation_code: newUser.validation_code,
@@ -80,7 +81,7 @@ export class AuthService {
 
     return {
       message:
-        "Utilisateur créé avec succès. Un email de validation a été envoyé.",
+        'Utilisateur créé avec succès. Un email de validation a été envoyé.',
       user: userWithoutSensitiveData,
     };
   }
@@ -93,17 +94,17 @@ export class AuthService {
     // Trouver l'utilisateur par email
     const user = await this.userRepository.findOneByEmail(email);
     if (!user) {
-      throw new UnauthorizedException("Email ou mot de passe incorrect");
+      throw new UnauthorizedException('Email ou mot de passe incorrect');
     }
 
     if (!user.is_active) {
-      throw new UnauthorizedException("Compte non activé");
+      throw new UnauthorizedException('Compte non activé');
     }
 
     // Vérifier le mot de passe
     const hashedPassword = crypto.MD5(password).toString();
     if (user.password !== hashedPassword) {
-      throw new UnauthorizedException("Email ou mot de passe incorrect");
+      throw new UnauthorizedException('Email ou mot de passe incorrect');
     }
 
     // Créer le payload JWT
@@ -113,7 +114,7 @@ export class AuthService {
     const { password: _, ...userWithoutPassword } = user;
 
     return {
-      message: "Connexion réussie",
+      message: 'Connexion réussie',
       user: userWithoutPassword,
       access_token,
     };
@@ -135,17 +136,17 @@ export class AuthService {
     // Trouver l'utilisateur par email
     const user = await this.userRepository.findOneByEmail(email);
     if (!user) {
-      throw new BadRequestException("Utilisateur non trouvé");
+      throw new BadRequestException('Utilisateur non trouvé');
     }
 
     // Vérifier si l'utilisateur est déjà activé
     if (user.is_active) {
-      throw new BadRequestException("Compte déjà activé");
+      throw new BadRequestException('Compte déjà activé');
     }
 
     // Vérifier le code de validation
     if (user.validation_code !== validation_code) {
-      throw new BadRequestException("Code de validation incorrect");
+      throw new BadRequestException('Code de validation incorrect');
     }
 
     // Activer l'utilisateur
@@ -158,7 +159,7 @@ export class AuthService {
     const updatedUser = await this.userRepository.findOneByEmail(email);
 
     if (!updatedUser) {
-      throw new BadRequestException("Erreur lors de la mise à jour");
+      throw new BadRequestException('Erreur lors de la mise à jour');
     }
 
     // Créer le payload JWT
@@ -172,9 +173,43 @@ export class AuthService {
     } = updatedUser;
 
     return {
-      message: "Compte validé avec succès",
+      message: 'Compte validé avec succès',
       user: userWithoutSensitiveData,
       access_token,
+    };
+  }
+
+  async addNewAdminUser(
+    createAdminUserDto: CreateAdminUserDto,
+  ): Promise<{ message: string; user: Partial<User> }> {
+    const { email, password, first_name, last_name } = createAdminUserDto;
+
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = await this.userRepository.findOneByEmail(email);
+    if (existingUser) {
+      throw new ConflictException('Un utilisateur avec cet email existe déjà');
+    }
+
+    // Hasher le mot de passe avec MD5
+    const hashedPassword = crypto.MD5(password).toString();
+
+    // Créer le nouvel utilisateur administrateur
+    const newAdminUser = await this.userRepository.createUser({
+      email,
+      password: hashedPassword,
+      first_name,
+      last_name,
+      validation_code: null, // Pas besoin de code de validation pour les admins
+      is_active: true,
+      is_admin: true,
+    });
+
+    // Retourner les informations sans le mot de passe
+    const { password: _, ...userWithoutPassword } = newAdminUser;
+
+    return {
+      message: 'Administrateur créé avec succès',
+      user: userWithoutPassword,
     };
   }
 }
