@@ -1,13 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Generated } from 'typeorm';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ unique: true })
   email: string;
 
   @Column()
   password: string;
+
+  @Column()
+  last_name: string;
+
+  @Column()
+  first_name: string;
+
+  @Column({ default: false })
+  is_active: boolean;
+
+  @Generated('uuid')
+  @Column({ unique: true, nullable: true })
+  validation_code: string | null;
+
+  @Column({ default: false })
+  is_admin: boolean;
 }

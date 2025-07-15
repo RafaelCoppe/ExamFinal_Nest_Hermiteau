@@ -14,7 +14,7 @@ export class UserService {
     return await this.userRepository.findAll();
   }
 
-  async findOneById(id: number): Promise<User | null> {
+  async findOneById(id: string): Promise<User | null> {
     return await this.userRepository.findById(id);
   }
 
@@ -22,12 +22,12 @@ export class UserService {
     return await this.userRepository.findOneByEmail(email);
   }
 
-  async update(id: number, userData: Partial<User>): Promise<User | null> {
+  async update(id: string, userData: Partial<User>): Promise<User | null> {
     await this.userRepository.updateUser(id, userData);
     return this.findOneById(id);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     return await this.userRepository.deleteUser(id);
   }
 }

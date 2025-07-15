@@ -19,7 +19,7 @@ export class UserRepository {
     return this.repository.find();
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     return this.repository.findOne({ where: { id } });
   }
 
@@ -27,12 +27,16 @@ export class UserRepository {
     return this.repository.findOne({ where: { email } });
   }
 
-  async updateUser(id: number, user: Partial<User>): Promise<User | null> {
+  async updateUser(id: string, user: Partial<User>): Promise<User | null> {
     await this.repository.update(id, user);
     return this.findById(id);
   }
 
-  async deleteUser(id: number): Promise<void> {
+  async activateUser(email: string): Promise<void> {
+    await this.repository.update({ email }, { is_active: true });
+  }
+
+  async deleteUser(id: string): Promise<void> {
     await this.repository.delete(id);
   }
 }
